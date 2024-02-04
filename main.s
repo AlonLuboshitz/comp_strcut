@@ -16,7 +16,7 @@ user_greet_fmt:
 user_guess_fmt:
     .string "What is your guess? "
 user_gameover_fmt:
-    .string "Game over, you lost :(. The correct answer was "
+    .string "Game over, you lost :(. The correct answer was %d"
 user_correct_fmt:
     .string "Congratz! You won!"
 number_fmt:
@@ -96,7 +96,11 @@ main:
     jmp .done
 .gameover:
     # print gameover
+    xorq %rdi, %rdi
+    xorq %rsi, %rsi 
     movq $user_gameover_fmt, %rdi
+    movl game_number, %esi
+
     xor %rax, %rax
     call printf
     jmp .done
