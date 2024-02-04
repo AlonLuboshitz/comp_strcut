@@ -41,11 +41,7 @@ main:
     movl $user_seed , %esi
     xor %rax, %rax
     call scanf
-    # print seed
-    movq $number_fmt, %rdi
-    movl user_seed , %esi
-    xor %rax , %rax
-    call printf
+    
     # set srand
     movq user_seed , %rdi
     xor %rax, %rax
