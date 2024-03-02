@@ -25,9 +25,10 @@ void free_cache_lines(cache_t cache);
 cache_t initialize_cache(uchar s, uchar t, uchar b, uchar E);
 cache_line_t* init_lines(uchar E,uchar b);
 int if_line_exsits(cache_line_t* line, long int tag, uchar E);
+int find_empty_or_min_line(cache_line_t* line, uchar E);
 uchar read_byte(cache_t cache, uchar* start, long int off);
 void print_address(unsigned int* arr, unsigned int n);
 void extract_tag_set_block(cache_t cache, unsigned int* address,int* S, int* b_off_set, long int* Tag);
 void write_byte(cache_t cache, uchar* start, long int off, uchar new);
-void update_line(cache_line_t* line, long int tag, uchar E,int off_set, uchar new);
+void update_line(cache_line_t* line, long int tag, uchar E,int off_set, uchar new, uchar* block);
 #endif

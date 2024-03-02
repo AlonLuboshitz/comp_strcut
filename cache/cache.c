@@ -72,19 +72,29 @@ void write_byte(cache_t cache, uchar* start, long int off, uchar new) {
     extract_tag_set_block(cache, address_bit, &S, &b_off_set, &tag);
     cache_line_t* lines = cache.cache[S];
     // update the line in the cache
-    update_line(lines, tag, cache.E, b_off_set, new);
-    // update the value in the RAM
     uchar* block = start + (off-b_off_set);
+    update_line(lines, tag, cache.E, b_off_set, new, block);
+    // update the value in the RAM
+    
     *(block) = new;
     
     free(address_bit);
 
 }
-void update_line(cache_line_t* line, long int tag, uchar E,int off_set, uchar new){
+void update_line(cache_line_t* line, long int tag, uchar E,int off_set, uchar new, uchar* block){
     int line_index = if_line_exsits(line, tag, E);  
     if (line_index != -1) {
         
         line[line_index].block[off_set] = new;
+    }
+    else {
+        line_index = find_empty_or_min_line(line, E);
+        line[line_index].tag = tag;
+        line[line_index].valid = 1;
+        line[line_index].frequency = 1;
+        line[line_index].block = block;
+        line[line_index].block[off_set] = new;
+
     }
 }
 //Function returns the line index if the line exists, else returns -1
