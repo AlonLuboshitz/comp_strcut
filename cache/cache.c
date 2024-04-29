@@ -21,38 +21,42 @@ cache_t initialize_cache(uchar s, uchar t, uchar b, uchar E) {
     if (cache.cache == NULL) {
         return cache;
     }
-   
-    else  {
-        for (int i = 0; i < (sets_amount); i++) {
-            cache.cache[i] = (cache_line_t*) malloc(E * sizeof(cache_line_t));
-            if (cache.cache[i] == NULL) {
+    int result = init_sets(cache.cache, sets_amount, E, b);
+    if (result == -1) {
+        free(cache.cache);
+        return cache;
+    }
+    return cache;
+}
+int init_sets(cache_line_t** Sets, int S, uchar E, uchar b){
+    for (int i = 0; i < (S); i++) {
+            Sets[i] = (cache_line_t*) malloc(E * sizeof(cache_line_t));
+            if (Sets[i] == NULL) {
                 for (int j = 0; j < i; j++) {
-                    free(cache.cache[j]);
+                    free(Sets[j]);
                 }
-                free (cache.cache);
-                return cache;
+                free (Sets);
+                return -1;
 
             } 
             else {
             for ( int j = 0; j < E; j++) {
-                int result = init_one_line(&cache.cache[i][j], b);
+                int result = init_one_line(&Sets[i][j], b);
                 if (result == -1) {
                     for (int k = 0; k < i; k++) {
                         for (int l = 0; l < E; l++) {
-                            free(cache.cache[k][l].block);
+                            free(Sets[k][l].block);
                         }
-                        free(cache.cache[k]);
+                        free(Sets[k]);
                     }
-                    free(cache.cache);
-                    return cache;
+                    free(Sets);
+                    return -1;
             }
      }
     }
     }
-    }
-    return cache;
+    return 1;
 }
-
 int init_one_line(cache_line_t* line,uchar b){
     int block_size = 2<<(b-1);
     line-> valid = 0;
