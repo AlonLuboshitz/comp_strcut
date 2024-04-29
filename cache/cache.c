@@ -2,6 +2,7 @@
 #include "cache.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <limits.h>
 cache_t initialize_cache(uchar s, uchar t, uchar b, uchar E) {
     cache_t cache;
     cache.s = s;
@@ -9,22 +10,61 @@ cache_t initialize_cache(uchar s, uchar t, uchar b, uchar E) {
     cache.b = b;
     cache.E = E;
     cache.m = s + t + b;
-    cache.cache = malloc(2<<(s-1));
-    for (int i = 0; i < (2<<(s-1)); i++) {
-        cache.cache[i] = init_lines(E, b);
+    int sets_amount = 0;
+    if (s == 0) {
+        sets_amount = 1;
+    }
+    else {
+        sets_amount = 2 << (s - 1);
+    }
+    cache.cache = (cache_line_t**)malloc((sets_amount)*sizeof(cache_line_t*));
+    if (cache.cache == NULL) {
+        return cache;
+    }
+   
+    else  {
+        for (int i = 0; i < (sets_amount); i++) {
+            cache.cache[i] = (cache_line_t*) malloc(E * sizeof(cache_line_t));
+            if (cache.cache[i] == NULL) {
+                for (int j = 0; j < i; j++) {
+                    free(cache.cache[j]);
+                }
+                free (cache.cache);
+                return cache;
+
+            } 
+            else {
+            for ( int j = 0; j < E; j++) {
+                int result = init_one_line(&cache.cache[i][j], b);
+                if (result == -1) {
+                    for (int k = 0; k < i; k++) {
+                        for (int l = 0; l < E; l++) {
+                            free(cache.cache[k][l].block);
+                        }
+                        free(cache.cache[k]);
+                    }
+                    free(cache.cache);
+                    return cache;
+            }
+     }
+    }
+    }
     }
     return cache;
 }
-cache_line_t* init_lines(uchar E,uchar b){
-    cache_line_t* lines = malloc(E * sizeof(cache_line_t));
+
+int init_one_line(cache_line_t* line,uchar b){
     int block_size = 2<<(b-1);
-    for (int i = 0; i < E; i++) {
-        lines[i].valid = 0;
-        lines[i].frequency = 0;
-        lines[i].tag = 0;
-        lines[i].block = malloc(block_size * sizeof(uchar));
+    line-> valid = 0;
+    line-> frequency = 0;
+    line-> tag = 0;
+    line-> block =(uchar*) malloc(block_size * sizeof(uchar));
+    if (line->block == NULL) {
+        return -1;
     }
-    return lines;
+    else {
+        return 1;
+    }
 }
 // Extract the first n bits from int off
 unsigned int* extract_bits(long int off, unsigned int n){
@@ -59,6 +99,7 @@ uchar read_byte(cache_t cache, uchar* start, long int off){
     insert_line(lines, tag, cache.E, block);
     
     free(address_bit);
+    return start[off];
 
 }
 /* write through and write no allocate.
@@ -110,7 +151,7 @@ int if_line_exsits(cache_line_t* line, long int tag, uchar E){
 
 // Function returns the index of the empty line or the line with the minimum frequency
 int find_empty_or_min_line(cache_line_t* line, uchar E){
-    int min = 2;
+    int min = INT_MAX;
     int min_index = 0;
     for (int i = 0; i < E; i++) {
         if (line[i].valid == 0) {

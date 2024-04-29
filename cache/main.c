@@ -25,6 +25,5 @@ while (1) {
 
 puts("");
 print_cache(cache);
-free_cache_lines(cache);
 free(mem);
 }
